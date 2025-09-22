@@ -7,10 +7,10 @@ import java.util.Scanner;
 public class GestorContactos {
     private static final String NOMBRE_ARCHIVO = "contactos.txt";
     private static Scanner scanner = new Scanner(System.in);
-
+    
     public static void main(String[] args) {
         int opcion;
-        
+
         do {
             mostrarMenu();
             opcion = scanner.nextInt();
@@ -53,18 +53,46 @@ public class GestorContactos {
 
     private static void agregarContacto() {
         String nombreContacto;
+        String telefonoContacto;
         System.out.println("\n--- AGREGAR CONTACTO ---");
-        System.out.print("Introducir nombre del contacto:");
+        System.out.print("Ingrese el nombre: ");
         nombreContacto = scanner.nextLine();
-        System.out.println("\n"+nombreContacto);
+        System.out.print("Ingrese el número: ");
+        telefonoContacto = scanner.nextLine();
+        System.out.println(nombreContacto+ ": "+telefonoContacto);
+
+        try {
+            FileWriter escritor = new FileWriter(NOMBRE_ARCHIVO, true);
+            escritor.write(nombreContacto+ ", "+telefonoContacto+"\n");
+            escritor.close();
+            System.out.println("Contacto agregado exitosamente.");
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
         // TODO: Pedir nombre y teléfono al usuario
-        // TODO: Abrir archivo en modo APPEND (añadir)
+        // TODO: Abrir archivo en modo APPEND (añadir) "se agrega como segundo parametro true para que puedas agregar mas datos"
         // TODO: Escribir el contacto en el formato: nombre,telefono
         // TODO: Cerrar el archivo y mostrar mensaje de éxito
     }
 
     private static void mostrarContactos() {
         System.out.println("\n--- LISTA DE CONTACTOS ---");
+        
+        FileReader fr = null;
+        try {
+            fr = new FileReader(NOMBRE_ARCHIVO);
+
+            int valor;
+            while((valor = fr.read()) !=-1){
+                System.out.print((char)valor); 
+            }
+            fr.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+            
+            System.out.println("Ocurrio un error:" + e);
+        }
+
         // TODO: Verificar si el archivo existe
         // TODO: Leer el archivo carácter por carácter
         // TODO: Mostrar todos los contactos con formato
@@ -75,6 +103,26 @@ public class GestorContactos {
         System.out.print("Ingrese el nombre a buscar: ");
         String nombreBuscado = scanner.nextLine();
         
+        FileReader fr = null;
+        try {
+            fr = new FileReader(NOMBRE_ARCHIVO);
+
+            int valor;
+            while((valor = fr.read()) !=-1){
+                if((char)valor == nombreBuscado.charAt(0)){
+                    System.out.println("Núnmero de contacto: "+ (char)valor);
+                }
+                else{ 
+                    System.out.println("El contacto no existe");
+                }
+            }
+            fr.close();            
+        } catch (Exception e) {
+            // TODO: handle exception
+            
+            System.out.println("Ocurrio un error:" + e);
+        }
+
         // TODO: Leer el archivo y buscar contactos que coincidan
         // TODO: Mostrar solo los contactos que coincidan
     }
@@ -82,6 +130,27 @@ public class GestorContactos {
     private static void eliminarArchivo() {
         // TODO: Crear objeto File y eliminar el archivo
         // TODO: Verificar si se eliminó correctamente
+
+        try {
+            File fichero = new File(NOMBRE_ARCHIVO);
+            if (fichero.exists()) {
+                if (fichero.delete()) {
+                    System.out.println("Se borró el archivo: " + NOMBRE_ARCHIVO);
+                } else {
+                    System.out.println("No se pudo borrar el archivo. Puede que esté en uso o no tengas permisos.");
+                }
+            } else {
+                System.out.println("El archivo no existe.");
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            
+            System.out.println("Ocurrio un error:" + e);
+        }
+
     }
+    
 }
 
+
+    //investigar el metodo append y como usarlo
