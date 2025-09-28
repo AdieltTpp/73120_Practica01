@@ -1,156 +1,125 @@
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+// Alumno: Adiel Jafet Poot Pech
 import java.util.Scanner;
+import src.MetodosFile;    // Importa la clase con los métodos de File
+import src.MetodosBuffer;  // Importa la clase con los métodos de Buffer
 
+/**
+ * Clase principal que orquesta la aplicación de gestión de contactos.
+ * Permite al usuario elegir al inicio si desea operar con I/O básico (File)
+ * o con I/O optimizado (Buffer) durante toda la sesión. Todas las operaciones
+ * se realizan sobre un único archivo para una comparación directa.
+ */
 public class GestorContactos {
+
     private static final String NOMBRE_ARCHIVO = "contactos.txt";
     private static Scanner scanner = new Scanner(System.in);
-    
-    public static void main(String[] args) {
-        int opcion;
 
+    /**
+     * Punto de entrada del programa. Primero, permite al usuario elegir el modo de
+     * operación (File o Buffer) y luego entra en un bucle para gestionar las
+     * operaciones de contacto.
+     */
+    public static void main(String[] args) {
+        // 1. El usuario elige el modo de operación al inicio.
+        System.out.println("=== BIENVENIDO AL GESTOR DE CONTACTOS ===");
+        System.out.println("¿Qué métodos de archivo desea usar en esta sesión?");
+        System.out.println("1. Métodos File (Lectura/Escritura básica)");
+        System.out.println("2. Métodos Buffer (Lectura/Escritura optimizada)");
+        System.out.print("Seleccione una opción: ");
+        
+        int modo = 0;
+        // Bucle para asegurar que se elija una opción válida.
+        while (modo != 1 && modo != 2) {
+            try {
+                modo = Integer.parseInt(scanner.nextLine());
+                if (modo != 1 && modo != 2) {
+                    System.out.print("Opción no válida. Por favor, elija 1 o 2: ");
+                }
+            } catch (NumberFormatException e) {
+                System.out.print("Entrada inválida. Por favor, ingrese un número (1 o 2): ");
+            }
+        }
+
+        boolean usarBuffer = (modo == 2);
+        String tipoMetodo = usarBuffer ? "Buffer" : "File";
+        System.out.println("\nHa elegido usar los métodos: " + tipoMetodo);
+
+        // 2. Bucle del menú de operaciones.
+        int opcionMenu;
         do {
-            mostrarMenu();
-            opcion = scanner.nextInt();
-            scanner.nextLine(); // Limpiar buffer
-            
-            switch (opcion) {
+            mostrarMenu(tipoMetodo);
+            try {
+                opcionMenu = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                opcionMenu = 0; // Asigna un valor por defecto para que entre en el 'default' del switch.
+            }
+
+            // Llama a los métodos correspondientes según el modo elegido.
+            switch (opcionMenu) {
                 case 1:
-                    agregarContacto();
+                    System.out.println("\n--- AGREGAR CONTACTO ---");
+                    System.out.print("Ingrese el nombre del contacto: ");
+                    String nombre = scanner.nextLine();
+                    System.out.print("Ingrese el teléfono del contacto: ");
+                    String telefono = scanner.nextLine();
+                    if (usarBuffer) MetodosBuffer.agregarContacto(nombre, telefono, NOMBRE_ARCHIVO);
+                    else MetodosFile.agregarContacto(nombre, telefono, NOMBRE_ARCHIVO);
                     break;
                 case 2:
-                    mostrarContactos();
+                    if (usarBuffer) MetodosBuffer.imprimirContacto(NOMBRE_ARCHIVO);
+                    else MetodosFile.imprimirContacto(NOMBRE_ARCHIVO);
                     break;
                 case 3:
-                    buscarContacto();
+                    System.out.println("\n--- BUSCAR CONTACTO ---");
+                    System.out.print("Ingrese el nombre a buscar: ");
+                    String nombreBuscado = scanner.nextLine();
+                    if (usarBuffer) MetodosBuffer.buscarContacto(nombreBuscado, NOMBRE_ARCHIVO);
+                    else MetodosFile.buscarContacto(nombreBuscado, NOMBRE_ARCHIVO);
                     break;
                 case 4:
-                    eliminarArchivo();
+                    System.out.println("\n--- REEMPLAZAR CONTACTO ---");
+                    System.out.print("Ingrese el nombre exacto del contacto a reemplazar: ");
+                    String nombreModificar = scanner.nextLine();
+                    if (usarBuffer) MetodosBuffer.reemplazarContacto(scanner, nombreModificar, NOMBRE_ARCHIVO);
+                    else MetodosFile.reemplazarContacto(scanner, nombreModificar, NOMBRE_ARCHIVO);
                     break;
                 case 5:
+                    System.out.println("\n--- ELIMINAR CONTACTO ---");
+                    System.out.print("Ingrese el nombre exacto del contacto a eliminar: ");
+                    String nombreEliminar = scanner.nextLine();
+                    if (usarBuffer) MetodosBuffer.eliminarContacto(nombreEliminar, NOMBRE_ARCHIVO);
+                    else MetodosFile.eliminarContacto(nombreEliminar, NOMBRE_ARCHIVO);
+                    break;
+                case 6:
+                    // Esta operación es la misma para ambos, ya que usa la clase File.
+                    MetodosFile.eliminarArchivo(NOMBRE_ARCHIVO);
+                    break;
+                case 7:
                     System.out.println("¡Hasta pronto!");
                     break;
                 default:
-                    System.out.println("Opción no válida. Intente nuevamente.");
+                    System.out.println("Opción no válida. Por favor, elija una opción del 1 al 7.");
             }
-            
-        } while (opcion != 5);
+        } while (opcionMenu != 7);
+
+        scanner.close();
     }
 
-    private static void mostrarMenu() {
-        System.out.println("\n=== GESTOR DE CONTACTOS ===");
+    /**
+     * Muestra el menú de operaciones disponible según el tipo de método elegido
+     * (File o Buffer).
+     * 
+     * @param tipoMetodo Cadena que indica el tipo de método actual ("File" o "Buffer").
+     */
+    private static void mostrarMenu(String tipoMetodo) {
+        System.out.println("\n=== MENÚ DE OPERACIONES (" + tipoMetodo + ") ===");
         System.out.println("1. Agregar contacto");
-        System.out.println("2. Mostrar todos los contactos");
-        System.out.println("3. Buscar contacto por nombre");
-        System.out.println("4. Eliminar archivo de contactos");
-        System.out.println("5. Salir");
+        System.out.println("2. Imprimir contactos");
+        System.out.println("3. Buscar contacto");
+        System.out.println("4. Reemplazar contacto");
+        System.out.println("5. Eliminar contacto");
+        System.out.println("6. Eliminar archivo de contactos");
+        System.out.println("7. Salir");
         System.out.print("Seleccione una opción: ");
     }
-
-    // COMPLETAR ESTOS MÉTODOS
-
-    private static void agregarContacto() {
-        String nombreContacto;
-        String telefonoContacto;
-        System.out.println("\n--- AGREGAR CONTACTO ---");
-        System.out.print("Ingrese el nombre: ");
-        nombreContacto = scanner.nextLine();
-        System.out.print("Ingrese el número: ");
-        telefonoContacto = scanner.nextLine();
-        System.out.println(nombreContacto+ ": "+telefonoContacto);
-
-        try {
-            FileWriter escritor = new FileWriter(NOMBRE_ARCHIVO, true);
-            escritor.write(nombreContacto+ ", "+telefonoContacto+"\n");
-            escritor.close();
-            System.out.println("Contacto agregado exitosamente.");
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-        // TODO: Pedir nombre y teléfono al usuario
-        // TODO: Abrir archivo en modo APPEND (añadir) "se agrega como segundo parametro true para que puedas agregar mas datos"
-        // TODO: Escribir el contacto en el formato: nombre,telefono
-        // TODO: Cerrar el archivo y mostrar mensaje de éxito
-    }
-
-    private static void mostrarContactos() {
-        System.out.println("\n--- LISTA DE CONTACTOS ---");
-        
-        FileReader fr = null;
-        try {
-            fr = new FileReader(NOMBRE_ARCHIVO);
-
-            int valor;
-            while((valor = fr.read()) !=-1){
-                System.out.print((char)valor); 
-            }
-            fr.close();
-        } catch (Exception e) {
-            // TODO: handle exception
-            
-            System.out.println("Ocurrio un error:" + e);
-        }
-
-        // TODO: Verificar si el archivo existe
-        // TODO: Leer el archivo carácter por carácter
-        // TODO: Mostrar todos los contactos con formato
-    }
-
-    private static void buscarContacto() {
-        System.out.println("\n--- BUSCAR CONTACTO ---");
-        System.out.print("Ingrese el nombre a buscar: ");
-        String nombreBuscado = scanner.nextLine();
-        
-        FileReader fr = null;
-        try {
-            fr = new FileReader(NOMBRE_ARCHIVO);
-
-            int valor;
-            while((valor = fr.read()) !=-1){
-                if((char)valor == nombreBuscado.charAt(0)){
-                    System.out.println("Núnmero de contacto: "+ (char)valor);
-                }
-                else{ 
-                    System.out.println("El contacto no existe");
-                }
-            }
-            fr.close();            
-        } catch (Exception e) {
-            // TODO: handle exception
-            
-            System.out.println("Ocurrio un error:" + e);
-        }
-
-        // TODO: Leer el archivo y buscar contactos que coincidan
-        // TODO: Mostrar solo los contactos que coincidan
-    }
-
-    private static void eliminarArchivo() {
-        // TODO: Crear objeto File y eliminar el archivo
-        // TODO: Verificar si se eliminó correctamente
-
-        try {
-            File fichero = new File(NOMBRE_ARCHIVO);
-            if (fichero.exists()) {
-                if (fichero.delete()) {
-                    System.out.println("Se borró el archivo: " + NOMBRE_ARCHIVO);
-                } else {
-                    System.out.println("No se pudo borrar el archivo. Puede que esté en uso o no tengas permisos.");
-                }
-            } else {
-                System.out.println("El archivo no existe.");
-            }
-        } catch (Exception e) {
-            // TODO: handle exception
-            
-            System.out.println("Ocurrio un error:" + e);
-        }
-
-    }
-    
 }
-
-
-    //investigar el metodo append y como usarlo
